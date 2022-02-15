@@ -12,13 +12,16 @@
 
     var ctx = null;
 
-    var pelotas = [];
-
-    while(pelotas.length < 3){
-        const pelota = new Pelota();
-        pelotas.push(pelota);
+    var Generador = {
+        pelotas: [],
+        llenar: function(){
+            while(this.pelotas.length < 3){
+                const pelota = new Pelota( aleatorio(120, 400),  aleatorio(120, 400)); 
+                this.pelotas.push(pelota);
+            }
+        }
     }
-
+    
     var Juego = {
         // Configuración inicial
         canvas: document.getElementById('canvas'),
@@ -35,6 +38,8 @@
                 //this.canvas.addEventListener('click', this.ejecutaJuego, false); 
                 this.init(); 
                 Ctrl.init(); 
+                
+                
             } 
         },
 
@@ -59,20 +64,20 @@
         init: function() {
             Fondo.init();
             Tablero.init();  
-            for(var i=0; i<pelotas.length; i++){
-                pelotas[i].init();
-            }
             Pala.init();          
             Ladrillos.init();
-
+            Generador.llenar();
+            for(var i=0; i<Generador.pelotas.length; i++){
+                Generador.pelotas[i].init(); 
+            }
             this.animar(); 
         },
 
         subirNivel: function() { 
             Tablero.nivel += 1; 
             Ladrillos.init(); 
-            for(var i=0; i<pelotas.length; i++){
-                pelotas[i].init();
+            for(var i=0; i<Generador.pelotas.length; i++){
+                Generador.pelotas[i].init(); 
             }
             Pala.init(); 
         }, 
@@ -90,8 +95,8 @@
             Ladrillos.dibujar();
             Pala.dibujar();
             Tablero.dibujar();
-            for(var i=0; i<pelotas.length; i++){
-                pelotas[i].dibujar();
+            for(var i=0; i<Generador.pelotas.length; i++){
+                Generador.pelotas[i].dibujar(); 
             }
             
         }
@@ -180,15 +185,17 @@
             for ( i= this.row; i--;){
                 for(j = this.col; j--;){
                     if(this.count[i][j] !== false){
-                        if (Pelota.x >= this.x(j)  &&
-                            Pelota.x <= (this.x(j) + this.w) &&
-                            Pelota.y >= this.y(i) &&
-                            Pelota.y <= (this.y(i) + this.h)) {
+                        for(var i=0; i<Generador.pelotas.length; i++){
+                            if (Generador.pelotas[i].x >= this.x(j)  &&
+                            Generador.pelotas[i].x <= (this.x(j) + this.w) &&
+                            Generador.pelotas[i].y >= this.y(i) &&
+                            Generador.pelotas[i].y <= (this.y(i) + this.h)) {
                                 this.collide(i, j);
                                 continue
                             }
                             ctx.fillStyle = this.gradient(i);
                             ctx.fillRect(this.x(j), this.y(i), this.w, this.h);
+                        }
                     }
                 }
             } 
@@ -201,7 +208,9 @@
             Tablero.marcador +=1;
             this.total += 1; 
             this.count[i][j] = false; 
-            Pelota.sy = -Pelota.sy;
+            for(var i =0; i<Generador.pelotas.length; i++){
+                Generador.pelotas[i].sy = -Generador.pelotas[i].sy;
+            }
         },
 
         x: function(row){
@@ -248,14 +257,17 @@
     }
 
     var Pelota = {
-        r: 10,
+        
 
-        init: function() {
-            this.x = aleatorio(120, 400); 
-            this.y = aleatorio(120, 300); 
+        init: function(x, y){
+            this.x = x; 
+            this.y = y; 
             this.sx = 1 + (0.4 * Tablero.nivel); 
-            this.sy = -1.5 - (0.4 * Tablero.nivel);   
+            this.sy = -1.5 - (0.4 * Tablero.nivel);
+            this.r = 10;
         },
+
+        
 
         dibujar: function() {
             
